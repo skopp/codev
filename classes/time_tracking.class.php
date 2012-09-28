@@ -222,11 +222,14 @@ class TimeTracking {
     global $status_closed;
     global $ETA_balance;
     global $job_support;
+    global $statusNames;
     
     $resolvedList = array();
     $productivityRate = 0;
     $totalElapsed = 0;
-    
+
+    $bugResolvedStatusThreshold = Config::getInstance()->getValue(Config::id_bugResolvedStatusThreshold);
+
     // --------
     $formatedProjList = implode( ', ', $projects );
         
@@ -259,7 +262,8 @@ class TimeTracking {
       // check if the bug has been reopened before endTimestamp
       $issue = IssueCache::getInstance()->getIssue($row->id);
       $latestStatus = $issue->getStatus($this->endTimestamp);
-      if (($latestStatus == $status_resolved) || ($latestStatus == $status_closed)) {
+      //if (($latestStatus == $status_resolved) || ($latestStatus == $status_closed)) {
+      if ($latestStatus >= $bugResolvedStatusThreshold) {
 
         // remove doubloons             
         if (!in_array ($row->id, $resolvedList)) {
@@ -282,7 +286,7 @@ class TimeTracking {
           }
         }
       } else {
-        if (isset($_GET['debug'])) { echo "getProductivRate REOPENED : bugid = $row->id<br/>"; }
+        if (isset($_GET['debug'])) { echo "getProductivRate REOPENED : bugid = $row->id status = ".$statusNames[$latestStatus]."<br/>"; }
       } 
         
     }
@@ -367,7 +371,9 @@ class TimeTracking {
     global $status_resolved;
     global $status_closed;
     global $tcCustomField;
-    
+
+    $bugResolvedStatusThreshold = Config::getInstance()->getValue(Config::id_bugResolvedStatusThreshold);
+
     $resolvedList = array();
     $issueList = array();    
     
@@ -421,7 +427,8 @@ class TimeTracking {
       
       // check if the bug has been reopened before endTimestamp
       $latestStatus = $issue->getStatus($this->endTimestamp);
-      if (($latestStatus == $status_resolved) || ($latestStatus == $status_closed)) {
+      //if (($latestStatus == $status_resolved) || ($latestStatus == $status_closed)) {
+      if ($latestStatus >= $bugResolvedStatusThreshold) {
          
         // remove doubloons        
         if (!in_array ($issue->bugId, $resolvedList)) {
@@ -1207,7 +1214,7 @@ public function getReopenedRate($projects = NULL) {
 
    /**
     * pourcentage du nbre de jours de retard par rapport au nbre de jours disponibles pour la correction
-    *  - Tient compte uniquement des fiches dont la date de livraison n'a pas été respectee
+    *  - Tient compte uniquement des fiches dont la date de livraison n'a pas ï¿½tï¿½ respectee
     *  - The submission day is not included (bug may have been posted at 18:00)
     *
     * @return 

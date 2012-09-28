@@ -220,6 +220,7 @@ class PeriodStats {
 
   	 global $status_resolved;
     global $status_closed;
+    $bugResolvedStatusThreshold = Config::getInstance()->getValue(Config::id_bugResolvedStatusThreshold);
 
     $resolvedList = array();
     $issueList = array();    
@@ -260,7 +261,8 @@ class PeriodStats {
       
       // check if the bug has been reopened before endTimestamp
       $latestStatus = $issue->getStatus($this->endTimestamp);
-      if (($latestStatus == $status_resolved) || ($latestStatus == $status_closed)) {
+      //if (($latestStatus == $status_resolved) || ($latestStatus == $status_closed)) {
+      if ($latestStatus >= $bugResolvedStatusThreshold) {
          
         // remove doubloons        
         if (!in_array ($issue->bugId, $resolvedList)) {
